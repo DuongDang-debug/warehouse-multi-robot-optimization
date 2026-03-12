@@ -1,0 +1,82 @@
+# Phương pháp Đánh giá Hệ thống & Xác định Quy mô Tối ưu (Evaluation Methodology)
+
+## 1. Có nên lấy chuẩn 1 giờ mô phỏng (4675 ticks) làm quy chuẩn không?
+
+**Câu trả lời là: SIÊU CHUẨN VÀ RẤT NÊN DÙNG.**
+
+Trong ngành Logistics và điều phối tự động (Warehouse Automation), bộ chỉ số đo lường hiệu suất (KPI) quan trọng nhất và luôn được sử dụng toàn cầu là **UPH (Units Per Hour - Số đơn hàng xử lý mỗi giờ)**.
+Việc bạn chốt chặn ở mốc 4675 Ticks (Đại diện cho 1 giờ vật lý) mang lại những lợi ích học thuật cực lớn:
+1. **Tính tương thích công nghiệp:** Khi bạn báo cáo *"Hệ thống 20 robot PSO đạt 1800 UPH"*, hội đồng hoặc doanh nghiệp ngay lập tức liên hệ được với năng lực của các kho hàng thực tế (Ví dụ kho Shopee thường yêu cầu hệ thống Sortation đạt 10,000 UPH). Nếu bạn báo cáo *"Đạt 30 đơn / phút"*, nghe quy mô sẽ nhỏ và kém chuyên nghiệp hơn rất nhiều.
+2. **Loại bỏ nhiễu thời gian khởi động (Warm-up Phase bias):** Khi hệ thống mới chạy, các robot đi từ điểm xuất phát, lúc này bản đồ trống trơn nên thông lượng tăng rất nhanh. Đây gọi là độ nhiễu Warm-up. Bằng cách chạy đủ dài (1 giờ ảo ~ 4675 ticks), hệ thống sẽ đạt trạng thái ổn định (Steady-state), số liệu thu được sẽ đáng tin cậy (Robust) hơn rất nhiều so với việc chỉ chạy thử vài trăm tick.
+3. **Công bằng tuyệt đối ở cấp độ thuật toán:** Dù máy tính xử lý nhanh hay chậm, thuật toán phức tạp hay đơn giản, bài toán luôn ép mọi bộ thử nghiệm phải đi qua đúng **4675 chu kỳ không gian/thời gian**. Điều này biến kết quả của bạn thành một "Stable Benchmark" (Thước đo ổn định).
+
+---
+
+## 2. Gợi ý thêm các tiêu chí Đánh giá Học thuật cho Báo cáo (Chuẩn IEEE/Q1)
+
+Để bài nghiên cứu NCKH đạt điểm tối đa, ngoài việc vẽ biểu đồ "Số Robot - Thông lượng (UPH)", bạn nên bổ sung các đánh giá đa chiều sau đây. Các tiêu chí này chính là sự khác biệt giữa một bài tập lớn sinh viên và một Báo cáo Khoa học thực thụ:
+
+### Tiêu chí 1: Đánh giá Hiệu suất Biên (Marginal ROI) & Phương pháp Elbow (Khuỷu tay)
+*Dùng cho phần: Tìm số lượng robot tối ưu*
+- **Khái niệm:** Lợi ích cận biên (Marginal Utility). Khi bạn thêm robot thứ 10, hệ thống tăng 50 UPH. Nhưng khi thêm robot thứ 25, hệ thống chỉ tăng thêm 10 UPH. 
+- **Cách đánh giá trên báo cáo:** Vẽ đồ thị dạng cột hoặc đường: `Thông lượng / Số lượng Robot`. Đây gọi là "Năng suất trung bình một đầu robot". Mục tiêu tối ưu của một kho hàng không phải là nhồi nhét tối đa xe (Maximum Throughput) mà là điểm cân bằng giữa Chi phí Đầu tư xe và Năng suất (Optimal Cost-efficiency). 
+- **Nhận xét:** Sử dụng thuật ngữ **"Điểm bão hòa" (Saturation Point)**. Bạn kết luận: *"Tại mốc 20 robot, hiệu suất biên bắt đầu suy giảm mạnh do chi phí thời gian giải quyết xoắn ngoặc tắc nghẽn (Congestion Resolution Overhead) vượt qua lợi ích của động năng song song."*
+
+### Tiêu chí 2: Tỉ lệ Xung đột & Thời gian Khôi phục (Conflict Rate & Recovery Time)
+*Dùng cho phần: So sánh sự ưu việt của thuật toán*
+- Thay vì chỉ nhìn vào kết quả cuối cùng, hãy "mổ xẻ" quá trình chạy.
+- **Tỉ lệ chờ nghẽn (Waiting Ratio):** Có bao nhiêu phần trăm thời gian robot ở trạng thái `WAIT`. Nếu Random có wait ratio = 35%, trong khi PSO+CA* chỉ có 12%, thì bạn đã chứng minh được tính "Tiên đoán thông minh" (Heuristic Look-ahead) của CA*.
+- **Tần suất chạm ngưỡng Deadlock (Stuck Rate):** Biểu đồ thể hiện mức độ gia tăng số lần robot chạm ngưỡng `stuck_counter > 5`. PSO tốt sẽ giúp phân tán lộ trình, làm giảm bớt số điểm thắt nút giao thông (Bottleneck).
+
+### Tiêu chí 3: Đánh giá Độ phức tạp Tính toán Thực hành (Empirical Computational Scalability)
+*Mảng học thuật khoa học máy tính cực kỳ thích điều này.*
+- Mọi thuật toán phân bổ (Allocator) đa tác tử đều bị nguyền rủa bởi *Sự bùng nổ tổ hợp (Combinatorial Explosion)*. O(N!) hoặc O(N^3).
+- **Cách đánh giá:** Ghi nhận Thời gian CPU thực tế (Execution Time) cần thiết để hoàn thành bài test 4675 ticks cho mỗi mốc.
+- **Lên báo cáo:** Vẽ đồ thị **Sự đánh đổi (Trade-off)**. 
+  *"Thuật toán PSO kết hợp CA* mang lại UPH cao gấp 1.4 lần thuật toán Hungarian, nhưng đổi lại thời gian xử lý CPU (Computational Cost) tăng theo hàm bậc hai $O(N^2)$"*
+  *"Tuy nhiên nhờ cơ cấu **Batching (Phân mảnh theo nhóm)** và **Fast-path Greedy (Bỏ qua PSO nếu chỉ có 1 robot rảnh)** mà nhóm đã đề xuất, hệ số tăng trưởng CPU đã được cắt giảm đáng kể, đảm bảo tính ứng dụng trên phần cứng thời gian thực (Real-time application) ở quy mô hàng chục robot."*
+
+### Tiêu chí 4: Hệ số Công bằng (Fairness/Gini Coefficient)
+- Đếm tổng số quãng đường di chuyển của từng robot.
+- Tính **Độ lệch chuẩn (Standard Deviation)** giữa các robot. 
+- **Nhận xét báo cáo:** *"Một thuật toán phân bổ xuất sắc là thuật toán không chỉ cho tổng sản lượng cao, mà còn phải duy trì tính tải cân bằng (Load Balancing) tốt giữa các node phần cứng, tránh thao tác khấu hao quá mức tài nguyên ở một vài robot cục bộ."*
+
+---
+
+## 3. Hệ thống Biểu đồ & Bảng biểu khuyên dùng cho Báo cáo
+
+Để trình bày một cách trực quan và chuẩn mực học thuật, báo cáo của bạn nên có cấu trúc hình ảnh như sau:
+
+**a) Biểu đồ 1: Đường cong Thông lượng (Throughput Line Chart)**
+- **Đồ thị:** Trục X là Số lượng Robot (5, 10, 15, 20, 25, 30). Trục Y là UPH (Tổng đơn hàng/giờ).
+- **Trình bày:** Vẽ 3-4 đường thẳng biểu diễn các thuật toán (Random, Hungarian, PSO).
+- **Tác dụng:** Cho thấy rõ biến thiên năng suất và **điểm bão hòa** của từng giải pháp.
+
+**b) Biểu đồ 2: Đánh giá Năng lực Tính toán (Computational Cost Bar Chart)**
+- **Đồ thị:** Trục X là Thuật toán / Đầu xe. Trục Y là Thời gian CPU thực tế (Execution Time) cần thiết để hoàn thành 1 Giờ ảo.
+- **Trình bày:** Dạng biểu đồ cột ghép (Grouped Bar Chart).
+- **Tác dụng:** Chứng minh được sự đánh đổi (Trade-off) giữa độ phức tạp tối ưu và thời gian xử lý thực.
+
+**c) Biểu đồ 3: Tỉ lệ Chờ & Xung đột (Congestion Ratio Area Chart)**
+- **Đồ thị:** Trục X là Số lượng robot. Trục Y là phần trăm thời gian ở trạng thái WAIT.
+- **Tác dụng:** Cơ sở vật lý giải thích "tại sao đường cong thông lượng ở Biểu đồ 1 lại gãy gập đi xuống".
+
+**d) Bảng Tổng hợp Dữ liệu Thống kê (Summary Table)**
+- Cần có 1 hoặc 2 bảng lớn chứa tất cả số liệu thô (UPH trung bình, Độ lệch chuẩn, Tốc độ tính toán). Bảng này tạo mức độ khả tín (Credibility) tuyệt đối cho bài NCKH.
+
+---
+
+## 4. Số lượng Chạy Thực nghiệm (N) & Cơ sở Thống kê
+
+Trong các ngành Khoa học Máy tính (Trí tuệ Nhân tạo / Mô phỏng quy mô lớn), các nghiên cứu uy tín đều yêu cầu tuân thủ **Định lý Giới hạn Trung tâm (Central Limit Theorem)** đối với các môi trường có yếu tố ngẫu nhiên (Stochastic elements). 
+
+Mặc dù bạn đã thiết lập khởi điểm ban đầu siêu chuẩn (Deterministic Initialization), nhưng quá trình sinh vận đơn sau đó (`pickup_orders`, random trong chuỗi thoát kẹt [attempt_escape](file:///e:/A_ToanHocNhung/Nghi%C3%AAn%20c%E1%BB%A9u%20khoa%20h%E1%BB%8Dc/nckh_test_combine/UET_Warehouse_Simulation/core/fleet_manager.py#236-275)) sẽ làm hệ thống phân nhánh.
+
+**Quy chuẩn thực hành:**
+- **Số lần chạy (N = ?):** Khuyến nghị chạy N = **10 lần** cho một kịch bản đơn lẻ (VD: 10 lần bấm chạy thuật toán PSO - Mốc 15 Robot). Nếu hạn hẹp thời gian, ít nhất phải đạt N = **5 lần**.
+- **Lý do đo lường (Khoa học thống kê):** 
+  1. **Vô hiệu hóa ngoại lệ (Outliers):** Nếu 1/10 lần bị kẹt cứng (deadlock), lấy trung bình cộng (Mean) sẽ làm mờ đi các nhiễu loạn cục bộ đó thay vì phủ định hệ thống.
+  2. **Đo lường Độ Tự tin (Confidence Interval & Variance):** Tính ra được Độ lệch chuẩn của cấu hình đó. Nếu 10 lần chạy kết quả đều ra `1800 ± 15 UPH` (Độ phân tán cực nhỏ), chứng tỏ thuật toán của bạn Cực kỳ Ổn định (High Robustness). 
+  3. **Error Bars:** Bắt buộc có phương sai mới vẽ được Error Bars (thanh sai số) trên các biểu đồ - đây là "con dấu 10 điểm" phân biệt bài luận sinh viên với một bài báo quốc tế!
+
+*Lời khuyên:* Bạn sẽ có tổng cộng: `3 Thuật toán x 6 Mốc Robot x 5 lần chạy = 90 bộ dữ liệu CSV`. Quy trình này nghe có vẻ nhiều nhưng với công cụ Benchmark tự động, nó thu thập siêu nhanh, và nó là "mỏ vàng" để bạn tha hồ trình bày luận điểm trong cuốn Báo cáo!
